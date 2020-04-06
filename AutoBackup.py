@@ -108,5 +108,6 @@ def on_player_left(server, player):
                     text = '§cError during autobk:' + str(err)
                     server.say(text)
                 else:
-                    text = 'autobk successfully!'
+                    text = 'autobked successfully!'
+                    server.logger.info(text)
                     server.say(text)
