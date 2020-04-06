@@ -63,7 +63,7 @@ def on_info(server, info):
                 text = '§7Last backup is at\n'
                 lasttime = get_FileAccessTime(path + '/back-up/auto')
                 text += TimeStampToTime(lasttime)
-                text += 'interval is %d hour' % interval
+                text += '\ninterval is %d hour' % interval
                 server.tell(info.player, text)
             elif info.content.startswith('!!autobk set'):
                 try:
