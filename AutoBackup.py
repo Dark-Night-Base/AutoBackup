@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+# 自动增量备份插件（仅限Linux，在Ubuntu18.04通过测试）
+# 定时运行：
+# rsync -a --delete back-up/auto/ back-up/auto-last
+# rsync -a --delete server/ back-up/auto
+# author: Sciroccogti
+
 
 import time
 import os
@@ -10,6 +16,7 @@ from utils import config, constant
 interval = 1  # hours between backups
 path = ''
 work_dir = ''
+firsttime = False
 
 def TimeStampToTime(timestamp: float) -> str:
     "convert timestamp to time (str)"
@@ -28,8 +35,7 @@ def get_FileAccessTime(filePath: str) -> float:
 
 
 def on_load(server, old_module):
-    global path
-    global work_dir
+    global path, work_dir, firsttime
     pluginconfig = config.Config(constant.CONFIG_FILE)
     pluginconfig.read_config()
     work_dir = pluginconfig['working_directory']
@@ -37,22 +43,27 @@ def on_load(server, old_module):
     try:
         os.listdir(path + '/back-up')
     except:
-        server.say('§eDirectory \'back-up\' not found, trying to create one...')
         server.logger.info(
             'Directory \'back-up\' not found, trying to create one...')
         os.mkdir(path + '/back-up')
-        os.listdir(path + '/back-up')
+    try:
+        os.listdir(path + '/back-up/auto')
+    except:
+        server.logger.info(
+            'Directory \'back-up\\auto\' not found, trying to create one...')
+        os.mkdir(path + '/back-up/auto')
+        firsttime = True
 
 
 def on_info(server, info):
-    global path
-    global interval
+    global path, interval
     if re.match('!!autobk', info.content) != None:
         if info.is_player:
             if info.content == '!!autobk query':
-                text = 'Last backup is at'
+                text = '§7Last backup is at\n'
                 lasttime = get_FileAccessTime(path + '/back-up/auto')
                 text += TimeStampToTime(lasttime)
+                text += 'interval is %d hour' % interval
                 server.tell(info.player, text)
             elif info.content.startswith('!!autobk set'):
                 try:
@@ -77,8 +88,10 @@ def on_info(server, info):
 
 
 def on_player_left(server, player):
+    global firsttime, interval
     lasttime = get_FileAccessTime(path + '/back-up/auto')
-    if time.time() - lasttime >= 60 * 60 * interval:
+    if firsttime or (interval > 0 and time.time() - lasttime >= 60 * 60 * interval):
+        firsttime = False
         if platform.system() == 'Windows':
             text = '§cWindows is not supported by autobk yet!'
             server.say(text)
@@ -90,7 +103,7 @@ def on_player_left(server, player):
                 server.say(text)
             else:
                 try:
-                    err = subprocess.call(['rsync', '-a', '--delete', work_dir, 'back-up/auto'])
+                    err = subprocess.call(['rsync', '-a', '--delete', work_dir + '/', 'back-up/auto'])
                 except Exception as err:
                     text = '§cError during autobk:' + str(err)
                     server.say(text)
