@@ -82,8 +82,8 @@ def on_info(server, info):
                         server.say(text)
             else:
                 text = '§7!!autobk§r: Show this message\n'
-                text += '§7!!autobk set [hour]§r: Set the interval between backups, 0 to turn it off\n'
                 text += '§7!!autobk query§r: Query the time of the last backup and the interval'
+                text += '§7!!autobk set [hour]§r: Set the interval between backups, 0 to turn it off\n'
                 server.tell(info.player, text)
 
 
