@@ -50,7 +50,7 @@ def on_load(server, old_module):
         os.listdir(path + '/back-up/auto')
     except:
         server.logger.info(
-            'Directory \'back-up\\auto\' not found, trying to create one...')
+            'Directory \'back-up/auto\' not found, trying to create one...')
         os.mkdir(path + '/back-up/auto')
         firsttime = True
 
@@ -68,7 +68,7 @@ def on_info(server, info):
             elif info.content.startswith('!!autobk set'):
                 try:
                     new_interval = int(
-                        re.match('!!autobk set (\S*)', info.content).groups()[0])
+                        re.match(r'!!autobk set (\S*)', info.content).groups()[0])
                 except:
                     text = '§cPlease enter an interger!'
                     server.tell(info.player, text)
