@@ -36,7 +36,7 @@ def get_FileAccessTime(filePath: str) -> float:
 
 def on_load(server, old_module):
     global path, work_dir, firsttime
-    pluginconfig = config.Config(constant.CONFIG_FILE)
+    pluginconfig = config.Config(server, constant.CONFIG_FILE)
     pluginconfig.read_config()
     work_dir = pluginconfig['working_directory']
     path = os.getcwd()  # MCDReforged/
