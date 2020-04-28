@@ -53,6 +53,7 @@ def on_load(server, old_module):
             'Directory \'back-up/auto\' not found, trying to create one...')
         os.mkdir(path + '/back-up/auto')
         firsttime = True
+    server.add_help_message('!!autobk', 'Autoatically backup server files')
 
 
 def on_info(server, info):
