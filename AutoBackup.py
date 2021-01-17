@@ -6,17 +6,28 @@
 # author: Sciroccogti
 
 
-import time
 import os
-import re
 import platform
+import re
 import subprocess
-from utils import config, constant
+import time
+import yaml
+
+from mcdreforged.api.all import *
+
+PLUGIN_METADATA = {
+    "id": "autobk",
+    "version": "0.0.2",
+    "name": "Auto backup with rsync on Linux",
+    "author": "Sciroccogti",
+    "link": "https://github.com/Dark-Night-Base/AutoBackup"
+}
 
 interval = 1  # hours between backups
 path = ''
 work_dir = ''
 firsttime = False
+
 
 def TimeStampToTime(timestamp: float) -> str:
     "convert timestamp to time (str)"
@@ -36,10 +47,10 @@ def get_FileAccessTime(filePath: str) -> float:
 
 def on_load(server, old_module):
     global path, work_dir, firsttime
-    pluginconfig = config.Config(server, constant.CONFIG_FILE)
-    pluginconfig.read_config()
-    work_dir = pluginconfig['working_directory']
     path = os.getcwd()  # MCDReforged/
+    config = open(path + "/config.yml", "r")
+    pluginconfig = yaml.load(config, Loader=yaml.CLoader)
+    work_dir = pluginconfig['working_directory']
     try:
         os.listdir(path + '/back-up')
     except:
@@ -53,7 +64,8 @@ def on_load(server, old_module):
             'Directory \'back-up/auto\' not found, trying to create one...')
         os.mkdir(path + '/back-up/auto')
         firsttime = True
-    server.add_help_message('!!autobk', 'Autoatically backup server files')
+    server.register_help_message(
+        '!!autobk', 'Autoatically backup server files')
 
 
 def on_info(server, info):
@@ -83,7 +95,7 @@ def on_info(server, info):
                         server.say(text)
             else:
                 text = '§7!!autobk§r: Show this message\n'
-                text += '§7!!autobk query§r: Query the time of the last backup and the interval'
+                text += '§7!!autobk query§r: Query the time of the last backup and the interval\n'
                 text += '§7!!autobk set [hour]§r: Set the interval between backups, 0 to turn it off\n'
                 server.tell(info.player, text)
 
@@ -98,13 +110,15 @@ def on_player_left(server, player):
             server.say(text)
         else:
             try:
-                err = subprocess.call(['rsync', '-a', '--delete', 'back-up/auto/', 'back-up/auto-last'])
-            except:
+                err = subprocess.call(
+                    ['rsync', '-a', '--delete', 'back-up/auto/', 'back-up/auto-last'])
+            except Exception as err:
                 text = '§cError during autobk:' + err
                 server.say(text)
             else:
                 try:
-                    err = subprocess.call(['rsync', '-a', '--delete', work_dir + '/', 'back-up/auto'])
+                    err = subprocess.call(
+                        ['rsync', '-a', '--delete', work_dir + '/', 'back-up/auto'])
                 except Exception as err:
                     text = '§cError during autobk:' + str(err)
                     server.say(text)
